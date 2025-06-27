@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <td>ID</td>
+                <td>User</td>
+                <td>Active</td>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+    <div id="container">
+        <fieldset>
+            <legend>URL</legend>
+            <div>
+                <div>
+                    <input id="friendName" type="text" placeholder="Логін користувача для спілкування" style="width: 328px;" required>
+                </div>
+                <input type="text" id="serverUrl" value="ws://example.com/websocket" width="500px" />
+                <button id="connectButton">Open</button>
+                <button id="disconnectButton" style="visibility: hidden">Close</button>
+            </div>
+            <div>
+                <label>Status:</label>
+                <span id="connectionStatus">CLOSED</span>
+            </div>
+        </fieldset>
+        <fieldset id="requestArea">
+            <legend>Request</legend>
+            <div>
+                <textarea id="sendMessage" disabled="disabled" style="margin: 0px; width: 328px; height: 65px;"></textarea>
+            </div>
+            <div>
+                <button id="sendButton" disabled="disabled">Send</button>
+                [Ctrl + Enter]
+            </div>
+        </fieldset>
+        <fieldset id="messageArea">
+            <legend>Message Log
+                <button id="clearMessage">Clear</button>
+            </legend>
+            <div id="messages"></div>
+        </fieldset>
+    </div>
+    <script src="{{ url_for('static', path='users.js') }}"></script>
+    <script src="{{ url_for('static', path='jquery.js') }}"></script>
+{% endblock content %}

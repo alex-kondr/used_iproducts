@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{% block title %}Вхід{% endblock title %}</h1>
+    <form>
+        <div class="form-group">
+            <label class="form-label">Логін</label>
+            <input id="username" type="text" class="form-control" name="username">
+        </div>
+        <div>
+            <label class="form-label">Пароль</label>
+            <input id="password" type="text" class="form-control" name="password">
+        </div>
+    </form>
+    <button id="button" class="btn btn-primary">Вхід</button>
+    <script src="{{ url_for('static', path='index.js') }}"></script>
+{% endblock content %}

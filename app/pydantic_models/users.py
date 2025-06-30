@@ -24,3 +24,12 @@ class TokenModel(BaseModel):
 class UserForm(BaseModel):
     username: str = Field(...)
     password: str = Field(...)
+
+
+class CommandModel(BaseModel):
+    name: str
+
+
+class AddUserCommand(BaseModel):
+    user_id: str
+    command_id: str

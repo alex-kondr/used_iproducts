@@ -45,5 +45,5 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
 
 
 if __name__ == "__main__":
-#     # asyncio.run(create_db())
-    uvicorn.run("main:app", reload=True)
+    asyncio.run(create_db())
+    # uvicorn.run("main:app", reload=True)

@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_jwt_auth import AuthJWT
 import jwt
 
-from app.db.users.models import User
-from app.db.base import get_db
+from app.db.users.models import User, Command, Tornament, Result
+# from app.db.base import get_db
 from app.config import settings
 
 

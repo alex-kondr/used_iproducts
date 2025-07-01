@@ -1,5 +1,7 @@
 from typing import Annotated, Optional
 
+
+from click import command
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, APIRouter, status, Depends
@@ -9,6 +11,7 @@ from fastapi_jwt_auth import AuthJWT
 
 from app.db.users import db_actions
 from app.db.users.models import User, Command, Tornament
+from app.db.users.associative import UserCommandAssoc, Role
 from app.db.base import get_db
 from app.pydantic_models.users import UserModel, UserModelResponse, TokenModel, CommandModel, AddUserCommand
 
@@ -40,17 +43,29 @@ async def get_user(username: Annotated[str, Depends(db_actions.decode_jwt)], db:
 @users_route.post("/commands/")
 async def add_command(command_model: CommandModel, username: str = Depends(db_actions.decode_jwt), db: AsyncSession = Depends(get_db)):
     command = Command(**command_model.model_dump())
-    db.add(command)
-    await db.commit()
-
-
-@users_route.patch("/commands/")
-async def add_user_by_command(model: AddUserCommand, username: str = Depends(db_actions.decode_jwt), db: AsyncSession = Depends(get_db)):
-    user_query = select(User).filter_by(id=model.user_id)
-    command_query = select(Command).filter_by(id=model.command_id)
-    user_result = await db.execute(user_query)
-    command_result = await db.execute(command_query)
-    user = user_result.scalar_one_or_none()
-    command = command_result.scalar_one_or_none()
+    user = await db.scalar(select(User).filter_by(username=username))
     command.users.append(user)
+    db.add(command)
+    user_command_assoc = await db.scalar(select(UserCommandAssoc).filter_by(user=user, command=command))
+    user_command_assoc.role = Role.teamleader
+    print(f"{user_command_assoc.role = }")
     await db.commit()
+
+
+@users_route.patch("/commands/add-user-to-my-team/")
+async def add_user_by_command(model: AddUserCommand, username: str = Depends(db_actions.decode_jwt), db: AsyncSession = Depends(get_db)):
+    user_add = await db.scalar(select(User).filter_by(id=model.user_id))
+    # user_command_assoc = await db.scalar(select(UserCommandAssoc).filter_by(user_id="fff1b45977b7454da0d2bdcebae74231", command_id=model.command_id))
+    user_command_assoc = await db.scalar(select(UserCommandAssoc).filter(User.username=="string1", UserCommandAssoc.command_id==model.command_id))
+    # print(f"{user_command_assoc.role = }")
+    # user = await db.scalar(select(User).filter_by(username=username))
+    # command = await db.scalar(select(Command).filter_by(id=model.command_id))
+    print(f"{user_command_assoc = }")
+    print(f"{user_command_assoc.role = }")
+    print(f"{user_command_assoc.command.name = }")
+    if not user_command_assoc or user_command_assoc.role != Role.teamleader:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not teamlead")
+
+    user_command_assoc.command.users.append(user_add)
+    await db.commit()
+

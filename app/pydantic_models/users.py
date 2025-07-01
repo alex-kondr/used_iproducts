@@ -28,6 +28,7 @@ class UserForm(BaseModel):
 
 class CommandModel(BaseModel):
     name: str
+    private: bool
 
 
 class AddUserCommand(BaseModel):

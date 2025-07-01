@@ -1,17 +1,18 @@
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
 from typing import List
+from enum import Enum, auto
 
 import fastapi_jwt_auth
 from sqlalchemy import ForeignKey, String, Boolean, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from passlib.context import CryptContext
-import jwt 
+import jwt
 from fastapi_jwt_auth import AuthJWT
 
 from app.config import settings
 from app.db.base import Base
-from app.db.users.associative import UserCommandAssoc, command_tornament_assoc
+from app.db.users.associative import UserCommandAssoc, CommandTornamentAssoc
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -23,7 +24,8 @@ class User(Base):
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
     username: Mapped[str] = mapped_column(String(30), unique=True, index=True)
     password_: Mapped[str] = mapped_column(String(100))
-    active: Mapped[Boolean] = mapped_column(Boolean(), default=True)
+    active: Mapped[bool] = mapped_column(Boolean(), default=True)
+    commands: Mapped[List["Command"]] = relationship(secondary=UserCommandAssoc.__tablename__, back_populates="users")
 
     def __init__(self, **kwargs):
         self.id = uuid4().hex
@@ -50,9 +52,9 @@ class Command(Base):
 
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
-    users: Mapped[List[User]] = relationship(secondary=UserCommandAssoc.__tablename__, back_populates="commands")
-    # data_assoc_id: Mapped[int] = relationship(ForeignKey(UserCommandAssoc.id))
-    data_assoc: Mapped[UserCommandAssoc] = relationship()
+    users: Mapped[List[User]] = relationship(secondary=UserCommandAssoc.__tablename__, back_populates="commands", lazy="selectin")
+    private: Mapped[bool] = mapped_column(Boolean())
+    tornaments: Mapped[List["Tornament"]] = relationship(secondary=CommandTornamentAssoc.__tablename__, back_populates="commands", lazy="selectin")
 
     def __init__(self, **kwargs):
         self.id = uuid4().hex
@@ -64,7 +66,7 @@ class Tornament(Base):
 
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
-    commands: Mapped[List[Command]] = relationship(secondary=command_tornament_assoc)
+    commands: Mapped[List[Command]] = relationship(secondary=CommandTornamentAssoc.__tablename__, back_populates="tornaments", lazy="selectin")
 
     def __init__(self, **kwargs):
         self.id = uuid4().hex
